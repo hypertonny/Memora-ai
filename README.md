@@ -1,6 +1,11 @@
-# Social Media Knowledge Extraction Tool
 
-A personal tool to automatically process Instagram and Threads posts, extract content using OCR and audio transcription, summarize with LLMs, and store in a searchable knowledge base.
+
+# Memora-AI — Social Media Knowledge Extractor
+
+This project was migrated from the original Social Media Knowledge Extraction Tool and is now maintained as **Memora-AI** ([Memora-ai](https://github.com/hypertonny/Memora-ai)).
+
+Memora-AI is a personal tool to automatically process Instagram, Threads, and YouTube posts, extract content using OCR and audio transcription, summarize with LLMs, and store in a searchable, AI-powered knowledge base.
+
 
 ## Features
 
@@ -20,10 +25,13 @@ A personal tool to automatically process Instagram and Threads posts, extract co
 - FFmpeg (for video processing)
 - (Optional) Ollama for local LLM fallback
 
+
 ### 1. Clone and Setup
 
 ```bash
-cd video-summary
+# Clone the repository
+git clone https://github.com/hypertonny/Memora-ai.git
+cd Memora-ai
 
 # Create virtual environment
 python -m venv venv
@@ -61,6 +69,7 @@ docker-compose up -d
 
 # Verify services are running
 docker-compose ps
+
 ```
 
 ### 4. Run the Application
@@ -78,6 +87,9 @@ uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 - **Web UI**: http://localhost:8000
 - **API Docs**: http://localhost:8000/docs
 - **Health Check**: http://localhost:8000/api/health
+
+
+---
 
 ## Usage
 
@@ -103,7 +115,8 @@ curl -X POST http://localhost:8000/api/search \
 curl http://localhost:8000/api/posts?limit=20
 ```
 
-## API Endpoints
+
+## API Endpoints (Current)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -115,24 +128,23 @@ curl http://localhost:8000/api/posts?limit=20
 | GET | `/api/stats` | Get statistics |
 | GET | `/api/health` | Health check |
 
-## Architecture
 
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Instagram/    │────▶│   Processors    │────▶│      LLM        │
-│    Threads      │     │  (OCR/Whisper)  │     │ (Gemini/Ollama) │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-                                                         │
-                                                         ▼
-                        ┌─────────────────┐     ┌─────────────────┐
-                        │   PostgreSQL    │◀────│   FastAPI       │
-                        │  (Structured)   │     │    Backend      │
-                        └─────────────────┘     └─────────────────┘
-                                                         │
-                        ┌─────────────────┐              │
-                        │     Qdrant      │◀─────────────┘
-                        │ (Vector Search) │
-                        └─────────────────┘
+
+## Architecture Diagram
+
+```mermaid
+flowchart TD
+  A[Instagram / Threads / YouTube] -->|Fetch| B(Fetchers)
+  B -->|Images| C(OCR Processor)
+  B -->|Audio/Video| D(Transcription Processor)
+  B -->|Text| E(Text Processor)
+  C & D & E --> F(LLM Summarizer)
+  F --> G{Storage}
+  G -->|Structured| H[(PostgreSQL)]
+  G -->|Vectors| I[(Qdrant)]
+  H & I --> J(API Server: FastAPI)
+  J --> K[Web UI / API Client]
+  K --> L[User]
 ```
 
 ## Configuration
@@ -162,10 +174,12 @@ curl http://localhost:8000/api/posts?limit=20
 
 ## Development
 
+
+
 ### Project Structure
 
 ```
-video-summary/
+Memora-AI/
 ├── src/
 │   ├── main.py              # FastAPI entry point
 │   ├── config.py            # Configuration
@@ -198,6 +212,11 @@ pytest tests/ -v
 - Check if container is running: `docker-compose ps`
 - View logs: `docker-compose logs qdrant`
 
+
 ## License
 
-MIT License - Use freely for personal projects.
+MIT License - Use freely for personal and research projects.
+
+---
+
+**Note:** This repository was migrated and cleaned from the original [socialmedia-Knowledge-Extractor](https://github.com/hypertonny/socialmedia-Knowledge-Extractor) at commit `bbd097f9c158ffce592fc79655a0ec3a1543e455`.
