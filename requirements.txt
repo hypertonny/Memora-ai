@@ -1,0 +1,43 @@
+# Web Framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.6
+
+# Database
+sqlalchemy>=2.0.25
+asyncpg>=0.29.0
+alembic>=1.13.1
+
+# Vector Database
+qdrant-client>=1.7.0
+
+# Content Fetching
+instaloader>=4.10.0
+yt-dlp>=2024.1.0
+playwright>=1.41.0
+httpx>=0.26.0
+aiofiles>=23.2.1
+
+# OCR
+easyocr>=1.7.1
+Pillow>=10.2.0
+
+# Audio/Video Processing
+faster-whisper>=1.0.0
+ffmpeg-python>=0.2.0
+
+# LLM Integration
+google-generativeai>=0.3.2
+ollama>=0.1.6
+
+# Embeddings
+sentence-transformers>=2.3.1
+
+# Utilities
+python-dotenv>=1.0.0
+pydantic>=2.5.3
+pydantic-settings>=2.1.0
+
+# Dev/Testing
+pytest>=7.4.4
+pytest-asyncio>=0.23.3

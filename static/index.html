@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Extractor</title>
+    <style>
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --accent: #e94560;
+            --accent-light: #ff6b6b;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --success: #00d26a;
+            --warning: #ffa502;
+            --border-radius: 12px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem 0;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        input[type="text"],
+        input[type="url"] {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        button {
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(233, 69, 96, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-danger {
+            background: rgba(233, 69, 96, 0.2);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.5rem;
+        }
+
+        .tab {
+            padding: 0.5rem 1rem;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-secondary);
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            color: var(--text-primary);
+        }
+
+        /* Jobs Dashboard Styles */
+        .job-item {
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid var(--accent);
+        }
+
+        .job-item.completed {
+            border-left-color: var(--success);
+        }
+
+        .job-item.failed {
+            border-left-color: #ff4444;
+        }
+
+        .job-item.cancelled {
+            border-left-color: #666;
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .job-url {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            word-break: break-all;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-light));
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.completed {
+            background: var(--success);
+        }
+
+        .progress-fill.failed {
+            background: #ff4444;
+        }
+
+        .job-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .job-message {
+            color: var(--text-secondary);
+        }
+
+        .job-stage {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .stage-fetching {
+            background: rgba(255, 165, 2, 0.2);
+            color: var(--warning);
+        }
+
+        .stage-transcribing {
+            background: rgba(138, 43, 226, 0.2);
+            color: #a855f7;
+        }
+
+        .stage-llm_summarizing {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .stage-completed {
+            background: rgba(0, 210, 106, 0.2);
+            color: var(--success);
+        }
+
+        .stage-failed {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+        }
+
+        .stage-cancelled {
+            background: rgba(100, 100, 100, 0.2);
+            color: #888;
+        }
+
+        .job-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        /* Logs Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .logs-container {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-y: auto;
+            flex: 1;
+            font-family: monospace;
+            font-size: 0.8rem;
+            line-height: 1.8;
+        }
+
+        .log-entry {
+            color: var(--text-secondary);
+        }
+
+        .log-entry:hover {
+            color: var(--text-primary);
+        }
+
+        /* Results and other existing styles */
+        .results {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .result-item {
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            border-left: 4px solid var(--accent);
+        }
+
+        .platform-badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .platform-instagram {
+            background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+            color: white;
+        }
+
+        .platform-threads {
+            background: #000;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .platform-youtube {
+            background: #ff0000;
+            color: white;
+        }
+
+        .topics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
+        }
+
+        .topic-tag {
+            padding: 0.2rem 0.4rem;
+            border-radius: 6px;
+            background: rgba(233, 69, 96, 0.2);
+            color: var(--accent-light);
+            font-size: 0.75rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .refresh-indicator {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-left: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🧠 Knowledge Extractor</h1>
+            <p class="subtitle">Transform social media content into organized knowledge</p>
+        </header>
+
+        <!-- Process URL Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">📥 Add Content</h2>
+            </div>
+            <div class="input-group">
+                <input type="url" id="urlInput" placeholder="Paste Instagram, YouTube, or Threads URL here..." />
+                <button class="btn-primary" onclick="processUrl()">
+                    <span id="processBtn">Extract</span>
+                </button>
+            </div>
+            <div id="processStatus"></div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-tab="jobs" onclick="switchTab('jobs')">⚙️ Jobs</div>
+            <div class="tab" data-tab="search" onclick="switchTab('search')">🔍 Search</div>
+            <div class="tab" data-tab="browse" onclick="switchTab('browse')">📚 Browse</div>
+            <div class="tab" data-tab="stats" onclick="switchTab('stats')">📊 Stats</div>
+        </div>
+
+        <!-- Jobs Section -->
+        <div id="jobsSection" class="card">
+            <div class="card-header">
+                <h2 class="card-title">⚙️ Processing Jobs <span class="refresh-indicator" id="jobsRefresh">Auto-refresh:
+                        3s</span></h2>
+                <button class="btn-secondary btn-small" onclick="loadJobs()">Refresh</button>
+            </div>
+            <div id="jobsList"></div>
+        </div>
+
+        <!-- Search Section -->
+        <div id="searchSection" class="card" style="display: none;">
+            <div class="card-header">
+                <h2 class="card-title">🔍 Semantic Search</h2>
+            </div>
+            <div class="input-group">
+                <input type="text" id="searchInput" placeholder="What are you looking for?"
+                    onkeypress="handleSearchKeypress(event)" />
+                <button class="btn-primary" onclick="search()">Search</button>
+            </div>
+            <div id="searchResults" class="results"></div>
+        </div>
+
+        <!-- Browse Section -->
+        <div id="browseSection" class="card" style="display: none;">
+            <div class="card-header">
+                <h2 class="card-title">📚 Knowledge Base</h2>
+                <button class="btn-secondary btn-small" onclick="loadPosts()">Refresh</button>
+            </div>
+            <div id="postsList" class="results"></div>
+        </div>
+
+        <!-- Stats Section -->
+        <div id="statsSection" class="card" style="display: none;">
+            <div class="card-header">
+                <h2 class="card-title">📊 Statistics</h2>
+            </div>
+            <div id="statsContent" class="stats-grid"></div>
+        </div>
+    </div>
+
+    <!-- Logs Modal -->
+    <div class="modal-overlay" id="logsModal" onclick="closeLogsModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>📋 Job Logs</h3>
+                <button class="modal-close" onclick="closeLogsModal()">&times;</button>
+            </div>
+            <div class="logs-container" id="logsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let jobsInterval = null;
+        let currentTab = 'jobs';
+
+        // Tab switching
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+
+            ['jobs', 'search', 'browse', 'stats'].forEach(t => {
+                document.getElementById(`${t}Section`).style.display = t === tab ? 'block' : 'none';
+            });
+
+            // Start/stop jobs auto-refresh
+            if (tab === 'jobs') {
+                startJobsRefresh();
+            } else {
+                stopJobsRefresh();
+            }
+
+            if (tab === 'browse') loadPosts();
+            if (tab === 'stats') loadStats();
+        }
+
+        // Jobs auto-refresh - only poll when there are active jobs
+        let hasActiveJobs = false;
+
+        function startJobsRefresh() {
+            loadJobs();
+            if (jobsInterval) clearInterval(jobsInterval);
+            // Poll every 3 seconds, only if there are active jobs
+            jobsInterval = setInterval(() => {
+                if (hasActiveJobs || currentTab === 'jobs') {
+                    loadJobs();
+                }
+            }, 3000);
+        }
+
+        function stopJobsRefresh() {
+            if (jobsInterval) {
+                clearInterval(jobsInterval);
+                jobsInterval = null;
+            }
+        }
+
+        // Process URL
+        async function processUrl() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url) return;
+
+            const btn = document.getElementById('processBtn');
+            btn.innerHTML = '<span class="loading"></span>';
+
+            try {
+                const response = await fetch(`${API_BASE}/process`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('urlInput').value = '';
+                    switchTab('jobs');
+                    loadJobs();
+                } else {
+                    alert(data.detail || 'Failed to process URL');
+                }
+            } catch (error) {
+                alert('Error connecting to server');
+            }
+
+            btn.innerHTML = 'Extract';
+        }
+
+        // Load Jobs
+        async function loadJobs() {
+            const jobsDiv = document.getElementById('jobsList');
+
+            try {
+                const response = await fetch(`${API_BASE}/jobs`);
+                const data = await response.json();
+
+                // Track if there are active jobs
+                hasActiveJobs = data.jobs?.some(j => !['completed', 'failed', 'cancelled'].includes(j.stage)) || false;
+
+                if (data.jobs && data.jobs.length > 0) {
+                    jobsDiv.innerHTML = data.jobs.map(j => `
+                        <div class="job-item ${j.stage}">
+                            <div class="job-header">
+                                <span class="job-stage stage-${j.stage}">${j.stage.replace('_', ' ')}</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary)">
+                                    ${new Date(j.started_at).toLocaleTimeString()}
+                                </span>
+                            </div>
+                            <div class="job-url">${j.url || j.post_id}</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill ${j.stage}" style="width: ${j.progress}%"></div>
+                            </div>
+                            <div class="job-status">
+                                <span class="job-message">${j.message || ''}</span>
+                                <span>${j.progress}%</span>
+                            </div>
+                            ${j.error ? `<div style="color: #ff4444; font-size: 0.8rem; margin-top: 0.5rem;">Error: ${j.error}</div>` : ''}
+                            <div class="job-actions">
+                                <button class="btn-secondary btn-small" onclick="showLogs('${j.post_id}')">📋 Logs</button>
+                                ${!['completed', 'failed', 'cancelled'].includes(j.stage) ?
+                            `<button class="btn-danger btn-small" onclick="cancelJob('${j.post_id}')">✕ Cancel</button>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    jobsDiv.innerHTML = `
+                        <div class="empty-state">
+                            <p>No jobs running. Paste a URL above to start!</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                jobsDiv.innerHTML = '<div style="color: var(--accent);">Failed to load jobs</div>';
+            }
+        }
+
+        // Cancel Job
+        async function cancelJob(postId) {
+            if (!confirm('Cancel this job?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/cancel/${postId}`, { method: 'POST' });
+                if (response.ok) {
+                    loadJobs();
+                }
+            } catch (error) {
+                alert('Failed to cancel job');
+            }
+        }
+
+        // Show Logs
+        async function showLogs(postId) {
+            const logsContent = document.getElementById('logsContent');
+            logsContent.innerHTML = '<div class="loading"></div>';
+            document.getElementById('logsModal').style.display = 'flex';
+
+            try {
+                const response = await fetch(`${API_BASE}/logs/${postId}`);
+                const data = await response.json();
+
+                if (data.logs && data.logs.length > 0) {
+                    logsContent.innerHTML = data.logs.map(l =>
+                        `<div class="log-entry">${l}</div>`
+                    ).join('');
+                } else {
+                    logsContent.innerHTML = '<div style="color: var(--text-secondary)">No logs available</div>';
+                }
+            } catch (error) {
+                logsContent.innerHTML = '<div style="color: var(--accent)">Failed to load logs</div>';
+            }
+        }
+
+        function closeLogsModal(event) {
+            if (!event || event.target.classList.contains('modal-overlay')) {
+                document.getElementById('logsModal').style.display = 'none';
+            }
+        }
+
+        // Search
+        function handleSearchKeypress(event) {
+            if (event.key === 'Enter') search();
+        }
+
+        async function search() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            const resultsDiv = document.getElementById('searchResults');
+            resultsDiv.innerHTML = '<div class="loading"></div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/search`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query, limit: 10 })
+                });
+
+                const data = await response.json();
+
+                if (data.results && data.results.length > 0) {
+                    resultsDiv.innerHTML = data.results.map(r => `
+                        <div class="result-item">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span class="platform-badge platform-${r.platform}">${r.platform}</span>
+                                <span style="color: var(--success); font-size: 0.75rem;">${Math.round(r.score * 100)}% match</span>
+                            </div>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">${r.summary || 'No summary'}</p>
+                            <div class="topics">
+                                ${(r.topics || []).map(t => `<span class="topic-tag">${t}</span>`).join('')}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    resultsDiv.innerHTML = '<div class="empty-state">No results found</div>';
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = '<div style="color: var(--accent)">Search failed</div>';
+            }
+        }
+
+        // Load Posts
+        async function loadPosts() {
+            const postsDiv = document.getElementById('postsList');
+            postsDiv.innerHTML = '<div class="loading"></div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/posts?limit=20`);
+                const data = await response.json();
+
+                if (data.posts && data.posts.length > 0) {
+                    postsDiv.innerHTML = data.posts.map(p => `
+                        <div class="result-item">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span class="platform-badge platform-${p.platform}">${p.platform}</span>
+                                <span style="color: var(--text-secondary); font-size: 0.75rem;">
+                                    ${new Date(p.created_at).toLocaleDateString()}
+                                </span>
+                            </div>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">${p.summary || p.caption?.substring(0, 150) || 'No content'}</p>
+                            <div class="topics">
+                                ${(p.topics || []).map(t => `<span class="topic-tag">${t}</span>`).join('')}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    postsDiv.innerHTML = '<div class="empty-state">No posts yet</div>';
+                }
+            } catch (error) {
+                postsDiv.innerHTML = '<div style="color: var(--accent)">Failed to load posts</div>';
+            }
+        }
+
+        // Load Stats
+        async function loadStats() {
+            const statsDiv = document.getElementById('statsContent');
+            statsDiv.innerHTML = '<div class="loading"></div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/stats`);
+                const data = await response.json();
+
+                statsDiv.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-value">${data.total_posts}</div>
+                        <div class="stat-label">Total Posts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.posts_by_platform?.instagram || 0}</div>
+                        <div class="stat-label">Instagram</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.posts_by_platform?.threads || 0}</div>
+                        <div class="stat-label">Threads</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.vector_store?.points_count || 0}</div>
+                        <div class="stat-label">Indexed</div>
+                    </div>
+                `;
+            } catch (error) {
+                statsDiv.innerHTML = '<div style="color: var(--accent)">Failed to load stats</div>';
+            }
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            startJobsRefresh();
+        });
+    </script>
+</body>
+
+</html>
